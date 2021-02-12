@@ -72,7 +72,7 @@ public class EmployeeController {
     }
 
     @GetMapping("/loginJdbcUnSafe")
-    public Employee loginJdbcUnSafe(@RequestParam(value = "name") String name, @RequestParam(value = "password") String password) {
+    public Employee loginJdbcUnSafe(@RequestParam(value = "name") String name, @RequestParam(value = "password", required = false) String password) {
         return globalRepositoryJdbc.login(name, password);
     }
 
