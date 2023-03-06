@@ -14,7 +14,7 @@ instance running in Docker
 
 Build Docker image 
 
-    cd docker/sqlinjection
+    cd mysql-in-docker/sqlinjection
     docker build -t sqlinjection_demo:latest .
 
 Run docker 
