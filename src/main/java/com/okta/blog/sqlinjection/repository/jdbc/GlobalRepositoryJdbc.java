@@ -6,12 +6,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
 @Repository
 @Slf4j
 public class GlobalRepositoryJdbc {
+
+    private static final Logger log = LoggerFactory.getLogger(GlobalRepositoryJdbc.class);
 
     @Autowired
     @Qualifier("globalAccessJdbcTemplate")

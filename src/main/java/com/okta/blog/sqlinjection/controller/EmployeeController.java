@@ -7,6 +7,8 @@ import com.okta.blog.sqlinjection.repository.jdbc.EmployeeRepositoryJdbcUnSafe;
 import com.okta.blog.sqlinjection.repository.jdbc.GlobalRepositoryJdbc;
 import com.okta.blog.sqlinjection.repository.jpa.EmployeeRepositoryJpaSafe;
 import com.okta.blog.sqlinjection.repository.jpa.EmployeeRepositoryJpaUnSafe;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -17,6 +19,7 @@ import java.util.List;
 @RestController
 public class EmployeeController {
 
+    private static final Logger log = LoggerFactory.getLogger(EmployeeController.class);
     @Autowired
     private EmployeeRepository employeeRepository;
 
@@ -37,11 +40,13 @@ public class EmployeeController {
 
     @GetMapping("/filterUserUnSafe")
     public List<Employee> filterByUsernameUnSafe(@RequestParam(value = "name") String name) {
+        log.info("Name is received (filterUserUnSafe): " + name);
         return employeeRepository.filterByUsername(name);
     }
 
     @GetMapping("/filterUserJdbcUnSafe")
     public List<Employee> filterByUsernameJdbcUnSafe(@RequestParam(value = "name") String name) {
+        log.info("Name is received (filterUserJdbcUnSafe): " + name);
         return repositoryJdbcUnSafe.filterByUsername(name);
     }
 
