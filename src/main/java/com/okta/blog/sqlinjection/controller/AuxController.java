@@ -13,4 +13,9 @@ public class AuxController {
         model.addAttribute("name", name);
         return "index";
     }
+
+    @GetMapping("/payloads")
+    public String index(Model model) {
+        return "payloads";
+    }
 }
