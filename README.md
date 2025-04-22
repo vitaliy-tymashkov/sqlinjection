@@ -15,6 +15,7 @@ instance running in Docker
 Build Docker image 
 
     cd mysql-in-docker/sqlinjection
+
     docker build -t sqlinjection_demo:latest .
 
 Run docker 
@@ -27,8 +28,14 @@ Run docker
     
 ![img.png](img.png)
 
-NOTE: When using maven start - it doesn't work (DB works, but the app doesn't see all tables in a proper manner).
+    As an option - MAVEN configuration can be used
+![img_1.png](img_1.png)
+
+
+NOTE: When starting application from the console with **MavenW** - in is necessary to assign proper ENV variables.
+
     cd ../../
+
     ./mvnw spring-boot:run
 
 
@@ -42,7 +49,7 @@ To connect to mySql use
     mysql> "show schemas;"
     mysql> "show databases;"
     
-    select * from employees.employee;
+    select * from employees.employee;       Note: initialized with the apllication
     select * from management.employee_review;
     SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES;
     SELECT * FROM INFORMATION_SCHEMA.TABLES; 
