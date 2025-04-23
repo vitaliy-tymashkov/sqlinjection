@@ -43,15 +43,16 @@ public class EmployeeController {
     private GlobalRepositoryJdbc globalRepositoryJdbc;
 
     @GetMapping("/filterUserUnSafe")
-    public List<Employee> filterByUsernameUnSafe(@RequestParam(value = "name") String name) {
+    public ResponseEntity<?> filterByUsernameUnSafe(@RequestParam(value = "name") String name) {
         log.info("Name is received (filterUserUnSafe): " + name);
         List<Employee> employees = employeeRepository.filterByUsername(name);
 
         if (employees.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "No users found");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body("No users found");
         }
 
-        return employees;
+        return ResponseEntity.ok(employees);
     }
 
     @GetMapping("/filterUserJdbcUnSafe")
