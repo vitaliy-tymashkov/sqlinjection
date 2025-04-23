@@ -1,6 +1,7 @@
 package com.okta.blog.sqlinjection.controller;
 
 import com.okta.blog.sqlinjection.domain.Employee;
+import com.okta.blog.sqlinjection.dto.ErrorResponse;
 import com.okta.blog.sqlinjection.repository.EmployeeRepository;
 import com.okta.blog.sqlinjection.repository.jdbc.EmployeeRepositoryJdbcSafe;
 import com.okta.blog.sqlinjection.repository.jdbc.EmployeeRepositoryJdbcUnSafe;
@@ -10,9 +11,12 @@ import com.okta.blog.sqlinjection.repository.jpa.EmployeeRepositoryJpaUnSafe;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
@@ -41,7 +45,13 @@ public class EmployeeController {
     @GetMapping("/filterUserUnSafe")
     public List<Employee> filterByUsernameUnSafe(@RequestParam(value = "name") String name) {
         log.info("Name is received (filterUserUnSafe): " + name);
-        return employeeRepository.filterByUsername(name);
+        List<Employee> employees = employeeRepository.filterByUsername(name);
+
+        if (employees.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "No users found");
+        }
+
+        return employees;
     }
 
     @GetMapping("/filterUserJdbcUnSafe")
@@ -77,8 +87,20 @@ public class EmployeeController {
     }
 
     @GetMapping("/loginJdbcUnSafe")
-    public Employee loginJdbcUnSafe(@RequestParam(value = "name") String name, @RequestParam(value = "password", required = false) String password) {
-        return globalRepositoryJdbc.login(name, password);
+    public ResponseEntity<?> loginJdbcUnSafe(@RequestParam(value = "name") String name,
+                                                    @RequestParam(value = "password", required = false) String password) {
+        log.info("Name is received (loginJdbcUnSafe): " + name);
+        log.info("Pass is received (loginJdbcUnSafe): " + password);
+        Employee employee = globalRepositoryJdbc.login(name, password);
+
+        if (employee == null) {
+//            ErrorResponse error = new ErrorResponse("Invalid username or password");
+//            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error);
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body("Invalid username or password");
+        }
+
+        return ResponseEntity.ok(employee);
     }
 
     @GetMapping("/filterUserGlobalAccessUnSafe")

